@@ -43,8 +43,8 @@ func main() {
 	}()
 	dmitriy := []byte(`{
 		"name":"Dmitriy",
-		"surname":"Ushakov",
-		"patronymic":"Vasilevich"
+		"surname":"Ushakov"
+		
 	}`)
 	users := [][]byte{dmitriy}
 
