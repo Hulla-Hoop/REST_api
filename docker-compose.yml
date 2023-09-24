@@ -23,10 +23,10 @@ services:
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
   postgres:
-    image: postgres:latest
+    image: postgres:13
     ports:
       - '5460:5432'
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=12345678
-      - POSTGRES_DB=test
+      - POSTGRES_DB=postgres

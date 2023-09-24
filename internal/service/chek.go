@@ -28,30 +28,30 @@ func (s *Service) Distribution(u chan User, uFailed chan UserFailed) {
 			close(uFailed)
 			run = false
 		default:
-			User1 := <-u
-			chekErr, chek := s.CheckErr(User1)
+			User := <-u
+			chekErr, chek := s.CheckErr(User)
 
 			if chek {
-				User2, err := s.EncrimentAge(User1)
+				User, err := s.EncrimentAge(User)
 				if err != nil {
 					fmt.Println(err)
 				}
 
-				User2, err = s.EncrimentGender(User2)
+				User, err = s.EncrimentGender(User)
 				if err != nil {
 					fmt.Println(err)
 				}
 
-				User2, err = s.EncrimentCountry(User2)
+				User, err = s.EncrimentCountry(User)
 				if err != nil {
 					fmt.Println(err)
 				}
-				fmt.Println("age encriment", User2)
+				fmt.Println("age encriment", User)
 			} else {
 				UserFail := UserFailed{
-					Name:       User1.Name,
-					Surname:    User1.Surname,
-					Patronymic: User1.Patronymic,
+					Name:       User.Name,
+					Surname:    User.Surname,
+					Patronymic: User.Patronymic,
 					Failed:     chekErr,
 				}
 				uFailed <- UserFail

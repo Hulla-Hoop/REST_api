@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Service struct {
@@ -20,6 +22,7 @@ func New(wg *sync.WaitGroup) *Service {
 }
 
 type User struct {
+	gorm.Model
 	Name        string `json:"name"`
 	Surname     string `json:"surname"`
 	Patronymic  string `json:"patronymic"`
