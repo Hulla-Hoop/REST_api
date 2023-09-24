@@ -40,7 +40,7 @@ func main() {
 
 	configFile := os.Args[1]
 	conf := ReadConfig(configFile)
-	conf2 := conf
+	conf2 := ReadConfig(configFile)
 	conf["group.id"] = "kafka-go-getting-started"
 	conf["auto.offset.reset"] = "earliest"
 
