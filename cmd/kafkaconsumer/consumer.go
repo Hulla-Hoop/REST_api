@@ -17,8 +17,11 @@ func main() {
 	end := echoendpoint.New(p)
 
 	e.POST("/user", end.Insert)
+	e.GET("/userage", end.AgeSort)
 	e.DELETE("/user/:id", end.Delete)
 	e.PUT("/user/:id", end.Update)
+	e.GET("/user/:nat", end.NatFilter)
+	e.GET("/user/:page", end.UserPagination)
 
 	e.Start(":1234")
 	/* s := service.New(&wg)

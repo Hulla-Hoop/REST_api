@@ -2,6 +2,7 @@ package echoendpoint
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,7 @@ func New(db *psql.Psql) *Endpoint {
 
 func (e *Endpoint) Insert(c echo.Context) error {
 	u := models.User{}
-	err := c.Bind(u)
+	err := c.Bind(&u)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -44,4 +45,57 @@ func (e *Endpoint) Update(c echo.Context) error {
 	u.ID = uint(id)
 	e.Db.Db.Save(u)
 	return c.JSON(http.StatusOK, u)
+}
+
+func (e *Endpoint) AgeSort(c echo.Context) error {
+	users := []models.User{}
+	e.Db.Db.Raw("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY age").Scan(&users)
+	return c.JSON(http.StatusOK, users)
+}
+
+func (e *Endpoint) NatFilter(c echo.Context) error {
+	national, _ := strconv.Atoi(c.Param("nat"))
+	users := []models.User{}
+	e.Db.Db.Raw("SELECT * FROM users WHERE age = ?", national).Scan(&users)
+	return c.JSON(http.StatusOK, users)
+}
+
+func (e *Endpoint) UserPagination(c echo.Context) error {
+	pageStr := c.Param("page")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	var UserCount int
+
+	err = e.Db.Db.Table("users").Count(&UserCount).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	UserPerPage := 2
+
+	pageCount := int(math.Ceil(float64(UserCount) / float64(UserPerPage)))
+
+	if pageCount == 0 {
+		pageCount = 1
+	}
+	if page > pageCount {
+
+		return c.JSON(http.StatusInternalServerError, nil)
+
+	}
+
+	offset := (page - 1) * UserPerPage
+
+	users := []models.User{}
+
+	err = e.Db.Db.Limit(UserPerPage).Offset(offset).Find(&users).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusInternalServerError, users)
 }
