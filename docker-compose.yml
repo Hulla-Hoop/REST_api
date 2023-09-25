@@ -29,4 +29,4 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=12345678
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=test

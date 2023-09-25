@@ -1,16 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"sync"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/hulla-hoop/testSobes/internal/config"
-	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/consumer"
-	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/producer"
 	"github.com/hulla-hoop/testSobes/internal/psql"
-	"github.com/hulla-hoop/testSobes/internal/service"
 )
 
 var wg sync.WaitGroup
@@ -18,7 +11,7 @@ var wg sync.WaitGroup
 func main() {
 
 	psql.InitDb()
-	s := service.New(&wg)
+	/* s := service.New(&wg)
 
 	config := config.New()
 	UserChan := make(chan service.User)
@@ -57,6 +50,6 @@ func main() {
 	go producer.Producer(UserChanFailed)
 
 	wg.Wait()
-	c.Close()
+	c.Close() */
 
 }
