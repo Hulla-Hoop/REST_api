@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/hulla-hoop/testSobes/internal/models"
 )
 
 type UserFailed struct {
@@ -14,7 +16,7 @@ type UserFailed struct {
 	Failed     string `json:"failed"`
 }
 
-func (s *Service) Distribution(u chan User, uFailed chan UserFailed) {
+func (s *Service) Distribution(u chan models.User, uFailed chan UserFailed) {
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -47,6 +49,8 @@ func (s *Service) Distribution(u chan User, uFailed chan UserFailed) {
 					fmt.Println(err)
 				}
 				fmt.Println("age encriment", User)
+				s.db.Create(User)
+
 			} else {
 				UserFail := UserFailed{
 					Name:       User.Name,

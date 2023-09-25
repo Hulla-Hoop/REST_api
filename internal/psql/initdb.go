@@ -4,14 +4,16 @@ import (
 	"fmt"
 
 	"github.com/hulla-hoop/testSobes/internal/config"
-	"github.com/hulla-hoop/testSobes/internal/service"
+	"github.com/hulla-hoop/testSobes/internal/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var db *gorm.DB
+type Psql struct {
+	Db *gorm.DB
+}
 
-func InitDb() {
+func InitDb() *Psql {
 
 	config := config.DbNew()
 
@@ -22,10 +24,9 @@ func InitDb() {
 		fmt.Println(err)
 	}
 
-	db.Debug().AutoMigrate(&service.User{})
+	db.Debug().AutoMigrate(&models.User{})
+	return &Psql{
+		Db: db,
+	}
 
-}
-
-func New() *gorm.DB {
-	return db
 }

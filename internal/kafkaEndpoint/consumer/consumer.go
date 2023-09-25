@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/hulla-hoop/testSobes/internal/service"
+	"github.com/hulla-hoop/testSobes/internal/models"
 )
 
 type KafkaConsumer struct {
@@ -25,7 +25,7 @@ func New(c *kafka.Consumer, wg *sync.WaitGroup) *KafkaConsumer {
 	}
 }
 
-func (c *KafkaConsumer) Consumer(f chan service.User) {
+func (c *KafkaConsumer) Consumer(f chan models.User) {
 
 	topic := "FIO"
 	err := c.c.SubscribeTopics([]string{topic}, nil)
@@ -52,7 +52,7 @@ func (c *KafkaConsumer) Consumer(f chan service.User) {
 				// Errors are informational and automatically handled by the consumer
 				continue
 			}
-			var U service.User
+			var U models.User
 			err = json.Unmarshal(ev.Key, &U)
 			if err != nil {
 				fmt.Println(err)

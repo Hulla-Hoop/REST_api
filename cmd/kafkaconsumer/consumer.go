@@ -3,14 +3,24 @@ package main
 import (
 	"sync"
 
+	"github.com/hulla-hoop/testSobes/internal/echoendpoint"
 	"github.com/hulla-hoop/testSobes/internal/psql"
+	"github.com/labstack/echo/v4"
 )
 
 var wg sync.WaitGroup
 
 func main() {
 
-	psql.InitDb()
+	p := psql.InitDb()
+	e := echo.New()
+	end := echoendpoint.New(p)
+
+	e.POST("/user", end.Insert)
+	e.DELETE("/user/:id", end.Delete)
+	e.PUT("/user/:id", end.Update)
+
+	e.Start(":1234")
 	/* s := service.New(&wg)
 
 	config := config.New()
