@@ -1,0 +1,30 @@
+type Userq {
+    id:Int!
+    created_at:Time
+    updated_at:Time
+    deleted_at:Time
+    name:String!
+    surname:String!
+    patronymic:String!
+    age:Int!
+    gender:String!
+    nationality:String!
+}
+
+type Query{
+    users:[Userq!]!
+    }
+
+input NewUser {
+    name:String!
+    surname:String!
+    patronymic:String
+    age:Int
+    gender:String
+    nationality:String
+}
+
+type Mutation {
+    createUser(input:NewUser!):Userq!
+}
+scalar Time
