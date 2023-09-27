@@ -39,7 +39,7 @@ func (p *KafkaProducer) Producer(user chan service.UserFailed) {
 	for run {
 		select {
 		case sig := <-sigchan:
-			p.inflogger.Println("Выход из горутины Consumer прекращено сигналом - ", sig)
+			p.inflogger.Println("Выход из горутины Producer прекращено сигналом - ", sig)
 			p.wg.Done()
 			run = false
 		default:
