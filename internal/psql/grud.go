@@ -1,15 +1,11 @@
 package psql
 
 import (
-	"fmt"
-
-	"github.com/hulla-hoop/testSobes/internal/models"
+	"github.com/hulla-hoop/testSobes/internal/modeldb"
 )
 
-func (p *Psql) Create(u models.User) {
+func (p *Psql) Create(u modeldb.User) {
 
-	result := p.Db.Create(&u)
-	fmt.Println(u.ID)
-	fmt.Println(result.Error)
-	fmt.Println(result.RowsAffected)
+	p.Db.Create(&u)
+
 }

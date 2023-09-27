@@ -14,7 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/hulla-hoop/testSobes/internal/models"
+	"github.com/hulla-hoop/testSobes/internal/modelgql"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -46,17 +46,18 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreateUser func(childComplexity int, input models.NewUser) int
+		CreateUser func(childComplexity int, input modelgql.NewUser) int
+		UpdateUser func(childComplexity int, userID int, input *modelgql.NewUser) int
 	}
 
 	Query struct {
+		Pages func(childComplexity int, page int) int
 		Users func(childComplexity int) int
 	}
 
-	Userq struct {
+	User struct {
 		Age         func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
-		DeletedAt   func(childComplexity int) int
 		Gender      func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
@@ -68,10 +69,12 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input models.NewUser) (*models.Userq, error)
+	CreateUser(ctx context.Context, input modelgql.NewUser) (*modelgql.User, error)
+	UpdateUser(ctx context.Context, userID int, input *modelgql.NewUser) (*modelgql.User, error)
 }
 type QueryResolver interface {
-	Users(ctx context.Context) ([]*models.Userq, error)
+	Users(ctx context.Context) ([]*modelgql.User, error)
+	Pages(ctx context.Context, page int) ([]*modelgql.User, error)
 }
 
 type executableSchema struct {
@@ -99,7 +102,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(models.NewUser)), true
+		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(modelgql.NewUser)), true
+
+	case "Mutation.updateUser":
+		if e.complexity.Mutation.UpdateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["UserId"].(int), args["input"].(*modelgql.NewUser)), true
+
+	case "Query.pages":
+		if e.complexity.Query.Pages == nil {
+			break
+		}
+
+		args, err := ec.field_Query_pages_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Pages(childComplexity, args["page"].(int)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -108,75 +135,68 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity), true
 
-	case "Userq.age":
-		if e.complexity.Userq.Age == nil {
+	case "User.age":
+		if e.complexity.User.Age == nil {
 			break
 		}
 
-		return e.complexity.Userq.Age(childComplexity), true
+		return e.complexity.User.Age(childComplexity), true
 
-	case "Userq.created_at":
-		if e.complexity.Userq.CreatedAt == nil {
+	case "User.createdAt":
+		if e.complexity.User.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Userq.CreatedAt(childComplexity), true
+		return e.complexity.User.CreatedAt(childComplexity), true
 
-	case "Userq.deleted_at":
-		if e.complexity.Userq.DeletedAt == nil {
+	case "User.gender":
+		if e.complexity.User.Gender == nil {
 			break
 		}
 
-		return e.complexity.Userq.DeletedAt(childComplexity), true
+		return e.complexity.User.Gender(childComplexity), true
 
-	case "Userq.gender":
-		if e.complexity.Userq.Gender == nil {
+	case "User.id":
+		if e.complexity.User.ID == nil {
 			break
 		}
 
-		return e.complexity.Userq.Gender(childComplexity), true
+		return e.complexity.User.ID(childComplexity), true
 
-	case "Userq.id":
-		if e.complexity.Userq.ID == nil {
+	case "User.name":
+		if e.complexity.User.Name == nil {
 			break
 		}
 
-		return e.complexity.Userq.ID(childComplexity), true
+		return e.complexity.User.Name(childComplexity), true
 
-	case "Userq.name":
-		if e.complexity.Userq.Name == nil {
+	case "User.nationality":
+		if e.complexity.User.Nationality == nil {
 			break
 		}
 
-		return e.complexity.Userq.Name(childComplexity), true
+		return e.complexity.User.Nationality(childComplexity), true
 
-	case "Userq.nationality":
-		if e.complexity.Userq.Nationality == nil {
+	case "User.patronymic":
+		if e.complexity.User.Patronymic == nil {
 			break
 		}
 
-		return e.complexity.Userq.Nationality(childComplexity), true
+		return e.complexity.User.Patronymic(childComplexity), true
 
-	case "Userq.patronymic":
-		if e.complexity.Userq.Patronymic == nil {
+	case "User.surname":
+		if e.complexity.User.Surname == nil {
 			break
 		}
 
-		return e.complexity.Userq.Patronymic(childComplexity), true
+		return e.complexity.User.Surname(childComplexity), true
 
-	case "Userq.surname":
-		if e.complexity.Userq.Surname == nil {
+	case "User.updatedAt":
+		if e.complexity.User.UpdatedAt == nil {
 			break
 		}
 
-		return e.complexity.Userq.Surname(childComplexity), true
-
-	case "Userq.updated_at":
-		if e.complexity.Userq.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.Userq.UpdatedAt(childComplexity), true
+		return e.complexity.User.UpdatedAt(childComplexity), true
 
 	}
 	return 0, false
@@ -284,11 +304,10 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema/schema.graphqls", Input: `type Userq {
-    id:Int!
-    created_at:Time
-    updated_at:Time
-    deleted_at:Time
+	{Name: "../schema/schema.graphqls", Input: `type User{
+    id: Int!
+    createdAt:Time!
+    updatedAt:Time!
     name:String!
     surname:String!
     patronymic:String!
@@ -297,8 +316,10 @@ var sources = []*ast.Source{
     nationality:String!
 }
 
+
 type Query{
-    users:[Userq!]!
+    users:[User!]!
+    pages(page:Int!):[User!]
     }
 
 input NewUser {
@@ -311,8 +332,10 @@ input NewUser {
 }
 
 type Mutation {
-    createUser(input:NewUser!):Userq!
+    createUser(input:NewUser!):User!
+    updateUser(UserId:Int!,input:NewUser):User!
 }
+
 scalar Time
 `, BuiltIn: false},
 }
@@ -325,15 +348,39 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.NewUser
+	var arg0 modelgql.NewUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐNewUser(ctx, tmp)
+		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐNewUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["UserId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("UserId"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserId"] = arg0
+	var arg1 *modelgql.NewUser
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalONewUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐNewUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -349,6 +396,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_pages_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
 	return args, nil
 }
 
@@ -404,7 +466,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateUser(rctx, fc.Args["input"].(models.NewUser))
+		return ec.resolvers.Mutation().CreateUser(rctx, fc.Args["input"].(modelgql.NewUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -416,9 +478,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Userq)
+	res := resTmp.(*modelgql.User)
 	fc.Result = res
-	return ec.marshalNUserq2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserq(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -430,27 +492,25 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Userq_id(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Userq_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Userq_updated_at(ctx, field)
-			case "deleted_at":
-				return ec.fieldContext_Userq_deleted_at(ctx, field)
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
 			case "name":
-				return ec.fieldContext_Userq_name(ctx, field)
+				return ec.fieldContext_User_name(ctx, field)
 			case "surname":
-				return ec.fieldContext_Userq_surname(ctx, field)
+				return ec.fieldContext_User_surname(ctx, field)
 			case "patronymic":
-				return ec.fieldContext_Userq_patronymic(ctx, field)
+				return ec.fieldContext_User_patronymic(ctx, field)
 			case "age":
-				return ec.fieldContext_Userq_age(ctx, field)
+				return ec.fieldContext_User_age(ctx, field)
 			case "gender":
-				return ec.fieldContext_Userq_gender(ctx, field)
+				return ec.fieldContext_User_gender(ctx, field)
 			case "nationality":
-				return ec.fieldContext_Userq_nationality(ctx, field)
+				return ec.fieldContext_User_nationality(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Userq", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	defer func() {
@@ -461,6 +521,81 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["UserId"].(int), fc.Args["input"].(*modelgql.NewUser))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*modelgql.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "surname":
+				return ec.fieldContext_User_surname(ctx, field)
+			case "patronymic":
+				return ec.fieldContext_User_patronymic(ctx, field)
+			case "age":
+				return ec.fieldContext_User_age(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "nationality":
+				return ec.fieldContext_User_nationality(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -493,9 +628,9 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Userq)
+	res := resTmp.([]*modelgql.User)
 	fc.Result = res
-	return ec.marshalNUserq2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserqᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -507,28 +642,98 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Userq_id(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Userq_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Userq_updated_at(ctx, field)
-			case "deleted_at":
-				return ec.fieldContext_Userq_deleted_at(ctx, field)
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
 			case "name":
-				return ec.fieldContext_Userq_name(ctx, field)
+				return ec.fieldContext_User_name(ctx, field)
 			case "surname":
-				return ec.fieldContext_Userq_surname(ctx, field)
+				return ec.fieldContext_User_surname(ctx, field)
 			case "patronymic":
-				return ec.fieldContext_Userq_patronymic(ctx, field)
+				return ec.fieldContext_User_patronymic(ctx, field)
 			case "age":
-				return ec.fieldContext_Userq_age(ctx, field)
+				return ec.fieldContext_User_age(ctx, field)
 			case "gender":
-				return ec.fieldContext_Userq_gender(ctx, field)
+				return ec.fieldContext_User_gender(ctx, field)
 			case "nationality":
-				return ec.fieldContext_Userq_nationality(ctx, field)
+				return ec.fieldContext_User_nationality(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Userq", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_pages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_pages(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Pages(rctx, fc.Args["page"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*modelgql.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_pages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "surname":
+				return ec.fieldContext_User_surname(ctx, field)
+			case "patronymic":
+				return ec.fieldContext_User_patronymic(ctx, field)
+			case "age":
+				return ec.fieldContext_User_age(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "nationality":
+				return ec.fieldContext_User_nationality(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_pages_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -662,8 +867,8 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_id(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_id(ctx, field)
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -693,9 +898,9 @@ func (ec *executionContext) _Userq_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -706,8 +911,8 @@ func (ec *executionContext) fieldContext_Userq_id(ctx context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_created_at(ctx, field)
+func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -727,16 +932,19 @@ func (ec *executionContext) _Userq_created_at(ctx context.Context, field graphql
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -747,8 +955,8 @@ func (ec *executionContext) fieldContext_Userq_created_at(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_updated_at(ctx, field)
+func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -768,57 +976,19 @@ func (ec *executionContext) _Userq_updated_at(ctx context.Context, field graphql
 		return graphql.Null
 	}
 	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*time.Time)
-	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Userq_updated_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Userq",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Userq_deleted_at(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_deleted_at(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
 		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeletedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
 		return graphql.Null
 	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*time.Time)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_deleted_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -829,8 +999,8 @@ func (ec *executionContext) fieldContext_Userq_deleted_at(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_name(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_name(ctx, field)
+func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -860,9 +1030,9 @@ func (ec *executionContext) _Userq_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -873,8 +1043,8 @@ func (ec *executionContext) fieldContext_Userq_name(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_surname(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_surname(ctx, field)
+func (ec *executionContext) _User_surname(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_surname(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -904,9 +1074,9 @@ func (ec *executionContext) _Userq_surname(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_surname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_surname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -917,8 +1087,8 @@ func (ec *executionContext) fieldContext_Userq_surname(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_patronymic(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_patronymic(ctx, field)
+func (ec *executionContext) _User_patronymic(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_patronymic(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -948,9 +1118,9 @@ func (ec *executionContext) _Userq_patronymic(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_patronymic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_patronymic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -961,8 +1131,8 @@ func (ec *executionContext) fieldContext_Userq_patronymic(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_age(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_age(ctx, field)
+func (ec *executionContext) _User_age(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_age(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -992,9 +1162,9 @@ func (ec *executionContext) _Userq_age(ctx context.Context, field graphql.Collec
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_age(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_age(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1005,8 +1175,8 @@ func (ec *executionContext) fieldContext_Userq_age(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_gender(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_gender(ctx, field)
+func (ec *executionContext) _User_gender(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_gender(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1036,9 +1206,9 @@ func (ec *executionContext) _Userq_gender(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_gender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_gender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1049,8 +1219,8 @@ func (ec *executionContext) fieldContext_Userq_gender(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Userq_nationality(ctx context.Context, field graphql.CollectedField, obj *models.Userq) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Userq_nationality(ctx, field)
+func (ec *executionContext) _User_nationality(ctx context.Context, field graphql.CollectedField, obj *modelgql.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_nationality(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1080,9 +1250,9 @@ func (ec *executionContext) _Userq_nationality(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Userq_nationality(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_nationality(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Userq",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2866,8 +3036,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj interface{}) (models.NewUser, error) {
-	var it models.NewUser
+func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj interface{}) (modelgql.NewUser, error) {
+	var it modelgql.NewUser
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2974,6 +3144,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateUser":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3038,6 +3215,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "pages":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_pages(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -3069,55 +3265,59 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var userqImplementors = []string{"Userq"}
+var userImplementors = []string{"User"}
 
-func (ec *executionContext) _Userq(ctx context.Context, sel ast.SelectionSet, obj *models.Userq) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, userqImplementors)
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *modelgql.User) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Userq")
+			out.Values[i] = graphql.MarshalString("User")
 		case "id":
-			out.Values[i] = ec._Userq_id(ctx, field, obj)
+			out.Values[i] = ec._User_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "created_at":
-			out.Values[i] = ec._Userq_created_at(ctx, field, obj)
-		case "updated_at":
-			out.Values[i] = ec._Userq_updated_at(ctx, field, obj)
-		case "deleted_at":
-			out.Values[i] = ec._Userq_deleted_at(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._User_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "name":
-			out.Values[i] = ec._Userq_name(ctx, field, obj)
+			out.Values[i] = ec._User_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "surname":
-			out.Values[i] = ec._Userq_surname(ctx, field, obj)
+			out.Values[i] = ec._User_surname(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "patronymic":
-			out.Values[i] = ec._Userq_patronymic(ctx, field, obj)
+			out.Values[i] = ec._User_patronymic(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "age":
-			out.Values[i] = ec._Userq_age(ctx, field, obj)
+			out.Values[i] = ec._User_age(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "gender":
-			out.Values[i] = ec._Userq_gender(ctx, field, obj)
+			out.Values[i] = ec._User_gender(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "nationality":
-			out.Values[i] = ec._Userq_nationality(ctx, field, obj)
+			out.Values[i] = ec._User_nationality(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3500,7 +3700,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐNewUser(ctx context.Context, v interface{}) (models.NewUser, error) {
+func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐNewUser(ctx context.Context, v interface{}) (modelgql.NewUser, error) {
 	res, err := ec.unmarshalInputNewUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3520,11 +3720,26 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUserq2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserq(ctx context.Context, sel ast.SelectionSet, v models.Userq) graphql.Marshaler {
-	return ec._Userq(ctx, sel, &v)
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUserq2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserqᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Userq) graphql.Marshaler {
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx context.Context, sel ast.SelectionSet, v modelgql.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*modelgql.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3548,7 +3763,7 @@ func (ec *executionContext) marshalNUserq2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋte
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUserq2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserq(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3568,14 +3783,14 @@ func (ec *executionContext) marshalNUserq2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋte
 	return ret
 }
 
-func (ec *executionContext) marshalNUserq2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelsᚐUserq(ctx context.Context, sel ast.SelectionSet, v *models.Userq) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx context.Context, sel ast.SelectionSet, v *modelgql.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._Userq(ctx, sel, v)
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -3873,6 +4088,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) unmarshalONewUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐNewUser(ctx context.Context, v interface{}) (*modelgql.NewUser, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNewUser(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -3889,20 +4112,51 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalTime(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*modelgql.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	res := graphql.MarshalTime(*v)
-	return res
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUser(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

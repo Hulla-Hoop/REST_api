@@ -2,7 +2,7 @@ package producer
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -13,14 +13,18 @@ import (
 )
 
 type KafkaProducer struct {
-	p  *kafka.Producer
-	wg *sync.WaitGroup
+	p         *kafka.Producer
+	wg        *sync.WaitGroup
+	inflogger *log.Logger
+	errLogger *log.Logger
 }
 
-func New(p *kafka.Producer, wg *sync.WaitGroup) *KafkaProducer {
+func New(p *kafka.Producer, wg *sync.WaitGroup, inflogger *log.Logger, errLogger *log.Logger) *KafkaProducer {
 	return &KafkaProducer{
-		p:  p,
-		wg: wg,
+		p:         p,
+		wg:        wg,
+		inflogger: inflogger,
+		errLogger: errLogger,
 	}
 }
 
@@ -35,13 +39,13 @@ func (p *KafkaProducer) Producer(user chan service.UserFailed) {
 	for run {
 		select {
 		case sig := <-sigchan:
-			fmt.Println("Ybito", sig)
+			p.inflogger.Println("Выход из горутины Consumer прекращено сигналом - ", sig)
 			p.wg.Done()
 			run = false
 		default:
 			uFailed, err := json.Marshal(<-user)
 			if err != nil {
-				fmt.Println(err)
+				p.errLogger.Println(err)
 			}
 			key := uFailed
 			p.p.Produce(&kafka.Message{

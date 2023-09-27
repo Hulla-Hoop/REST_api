@@ -1,8 +1,7 @@
-type Userq {
-    id:Int!
-    created_at:Time
-    updated_at:Time
-    deleted_at:Time
+type User{
+    id: Int!
+    createdAt:Time!
+    updatedAt:Time!
     name:String!
     surname:String!
     patronymic:String!
@@ -11,8 +10,10 @@ type Userq {
     nationality:String!
 }
 
+
 type Query{
-    users:[Userq!]!
+    users:[User!]!
+    pages(page:Int!):[User!]
     }
 
 input NewUser {
@@ -25,6 +26,8 @@ input NewUser {
 }
 
 type Mutation {
-    createUser(input:NewUser!):Userq!
+    createUser(input:NewUser!):User!
+    updateUser(UserId:Int!,input:NewUser):User!
 }
+
 scalar Time

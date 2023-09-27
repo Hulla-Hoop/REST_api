@@ -1,33 +1,33 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"os"
 	"sync"
 
-	"github.com/hulla-hoop/testSobes/internal/echoendpoint"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/hulla-hoop/testSobes/internal/config"
+	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/consumer"
+	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/producer"
+	"github.com/hulla-hoop/testSobes/internal/modeldb"
 	"github.com/hulla-hoop/testSobes/internal/psql"
-	"github.com/labstack/echo/v4"
+	"github.com/hulla-hoop/testSobes/internal/service"
+	"github.com/hulla-hoop/testSobes/pkg/app"
 )
 
 var wg sync.WaitGroup
 
 func main() {
-
-	p := psql.InitDb()
-	e := echo.New()
-	end := echoendpoint.New(p)
-
-	e.POST("/user", end.Insert)
-	e.GET("/userage", end.AgeSort)
-	e.DELETE("/user/:id", end.Delete)
-	e.PUT("/user/:id", end.Update)
-	e.GET("/user/:nat", end.NatFilter)
-	e.GET("/user/:page", end.UserPagination)
-
-	e.Start(":1234")
-	/* s := service.New(&wg)
+	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
+	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
+	psql := psql.InitDb()
+	a := app.New(psql, infLogger, errLogger)
+	go a.Start()
+	s := service.New(&wg, psql, infLogger, errLogger)
 
 	config := config.New()
-	UserChan := make(chan service.User)
+	UserChan := make(chan modeldb.User)
 	UserChanFailed := make(chan service.UserFailed)
 	wg.Add(3)
 
@@ -47,7 +47,7 @@ func main() {
 		fmt.Printf("Failed to create producer: %s", err)
 		os.Exit(1)
 	}
-	producer := producer.New(p, &wg)
+	producer := producer.New(p, &wg, infLogger, errLogger)
 
 	c, err := kafka.NewConsumer(&conf)
 
@@ -56,13 +56,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	consumer := consumer.New(c, &wg)
+	consumer := consumer.New(c, &wg, infLogger, errLogger)
 
 	go consumer.Consumer(UserChan)
 	go s.Distribution(UserChan, UserChanFailed)
 	go producer.Producer(UserChanFailed)
 
 	wg.Wait()
-	c.Close() */
+	c.Close()
 
 }

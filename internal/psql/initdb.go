@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hulla-hoop/testSobes/internal/config"
-	"github.com/hulla-hoop/testSobes/internal/models"
+	"github.com/hulla-hoop/testSobes/internal/modeldb"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -24,7 +24,7 @@ func InitDb() *Psql {
 		fmt.Println(err)
 	}
 
-	db.Debug().AutoMigrate(&models.User{})
+	db.Debug().AutoMigrate(&modeldb.User{})
 	return &Psql{
 		Db: db,
 	}
