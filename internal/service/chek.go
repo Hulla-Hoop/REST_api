@@ -36,7 +36,7 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 			if chek {
 				User, err := s.EncrimentAge(User)
 				if err != nil {
-					s.errLogger.Panicln(err)
+					s.errLogger.Println(err)
 				}
 
 				User, err = s.EncrimentGender(User)
@@ -46,7 +46,7 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 
 				User, err = s.EncrimentCountry(User)
 				if err != nil {
-					s.errLogger.Panicln(err)
+					s.errLogger.Println(err)
 				}
 				User.CreatedAt = time.Now()
 				User.UpdatedAt = time.Now()

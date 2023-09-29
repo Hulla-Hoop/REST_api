@@ -41,7 +41,8 @@ func (s *Service) EncrimentAge(u modeldb.User) (modeldb.User, error) {
 	r, err := http.Get(url)
 	if err != nil {
 		s.errLogger.Println(err)
-		return modeldb.User{}, err
+		u, _ := s.EncrimentAge(u)
+		return u, err
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
