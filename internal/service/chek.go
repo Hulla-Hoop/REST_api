@@ -16,6 +16,8 @@ type UserFailed struct {
 	Failed     string `json:"failed"`
 }
 
+// Функция обогащает верные сообщения и ложит в БД, невернные сообщения отправляются в очередь FIO_FAILED
+
 func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 
 	sigchan := make(chan os.Signal, 1)
@@ -48,10 +50,14 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 				if err != nil {
 					s.errLogger.Println(err)
 				}
+
 				User.CreatedAt = time.Now()
 				User.UpdatedAt = time.Now()
 				s.inflogger.Println("Сообщение готово к хранению в БД", User)
-				s.db.Create(User)
+				err = s.db.Create(User)
+				if err != nil {
+					s.errLogger.Println(err)
+				}
 
 			} else {
 				UserFail := UserFailed{
@@ -60,6 +66,7 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 					Patronymic: User.Patronymic,
 					Failed:     chekErr,
 				}
+
 				s.inflogger.Println("Сообщение не прошло проверку и отправлено в очередь FIO_FAIL")
 				uFailed <- UserFail
 			}
