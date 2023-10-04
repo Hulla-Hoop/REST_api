@@ -1,12 +1,14 @@
 package service
 
 import (
+	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
+	"github.com/hulla-hoop/testSobes/internal/psql"
 )
 
 type UserFailed struct {
@@ -16,9 +18,17 @@ type UserFailed struct {
 	Failed     string `json:"failed"`
 }
 
+type Servicer interface {
+	Encriment(u modeldb.User) (modeldb.User, error)
+	EncrimentAge(uName string) (int, error)
+	EncrimentGender(uName string) (string, error)
+	EncrimentCountry(uName string) (string, error)
+	CheckErr(U modeldb.User) (string, bool)
+}
+
 // Функция обогащает верные сообщения и ложит в БД, невернные сообщения отправляются в очередь FIO_FAILED
 
-func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
+func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, infoLogger *log.Logger, errLogger *log.Logger, wg *sync.WaitGroup, db *psql.Psql) {
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -27,36 +37,19 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 	for run {
 		select {
 		case sig := <-sigchan:
-			s.inflogger.Println("Выход из горутины Service прекращено сигналом - ", sig)
-			s.wg.Done()
+			infoLogger.Println("Выход из горутины Service прекращено сигналом - ", sig)
+			wg.Done()
 			close(uFailed)
 			run = false
 		default:
 			User := <-u
 			chekErr, chek := s.CheckErr(User)
-
 			if chek {
-				User, err := s.EncrimentAge(User)
+				User, err := s.Encriment(User)
+				infoLogger.Println("Сообщение готово к хранению в БД", User)
+				err = db.Create(User)
 				if err != nil {
-					s.errLogger.Println(err)
-				}
-
-				User, err = s.EncrimentGender(User)
-				if err != nil {
-					s.errLogger.Println(err)
-				}
-
-				User, err = s.EncrimentCountry(User)
-				if err != nil {
-					s.errLogger.Println(err)
-				}
-
-				User.CreatedAt = time.Now()
-				User.UpdatedAt = time.Now()
-				s.inflogger.Println("Сообщение готово к хранению в БД", User)
-				err = s.db.Create(User)
-				if err != nil {
-					s.errLogger.Println(err)
+					errLogger.Println(err)
 				}
 
 			} else {
@@ -67,7 +60,7 @@ func (s *Service) Distribution(u chan modeldb.User, uFailed chan UserFailed) {
 					Failed:     chekErr,
 				}
 
-				s.inflogger.Println("Сообщение не прошло проверку и отправлено в очередь FIO_FAIL")
+				infoLogger.Println("Сообщение не прошло проверку и отправлено в очередь FIO_FAIL")
 				uFailed <- UserFail
 			}
 

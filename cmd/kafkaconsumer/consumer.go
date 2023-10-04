@@ -22,9 +22,14 @@ func main() {
 	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
 	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
 	psql := psql.InitDb()
+
 	a := app.New(psql, infLogger, errLogger)
+
 	go a.Start()
-	s := service.New(&wg, psql, infLogger, errLogger)
+
+	cfgApi := config.NewCfgApi()
+
+	s := service.New(errLogger, cfgApi)
 
 	config := config.New()
 	UserChan := make(chan modeldb.User)
@@ -47,7 +52,7 @@ func main() {
 		fmt.Printf("Failed to create producer: %s", err)
 		os.Exit(1)
 	}
-	producer := producer.New(p, &wg, infLogger, errLogger)
+	producer := producer.New(p, &wg, infLogger, errLogger, config)
 
 	c, err := kafka.NewConsumer(&conf)
 
@@ -56,10 +61,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	consumer := consumer.New(c, &wg, infLogger, errLogger)
+	consumer := consumer.New(c, &wg, infLogger, errLogger, config)
 
 	go consumer.Consumer(UserChan)
-	go s.Distribution(UserChan, UserChanFailed)
+	go service.Distribution(s, UserChan, UserChanFailed, infLogger, errLogger, &wg, psql)
 	go producer.Producer(UserChanFailed)
 
 	wg.Wait()

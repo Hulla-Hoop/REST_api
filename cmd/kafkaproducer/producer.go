@@ -16,7 +16,7 @@ func main() {
 	conf := make(kafka.ConfigMap)
 	conf["bootstrap.servers"] = c.BootstrapService
 
-	topic := "FIO"
+	topic := c.Topic
 	p, err := kafka.NewProducer(&conf)
 
 	if err != nil {
@@ -24,8 +24,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Go-routine to handle message delivery reports and
-	// possibly other event types (errors, stats, etc)
 	go func() {
 		for e := range p.Events() {
 			switch ev := e.(type) {
@@ -41,20 +39,18 @@ func main() {
 	}()
 	dmitriy := []byte(`{
 		"name":"Dmitriy",
-		"surname":"Ushakov"
-		
+		"surname":"Ushakov"	
 	}`)
 	users := [][]byte{dmitriy}
 
 	for n := 0; n < len(users); n++ {
-		key := users[rand.Intn(len(users))]
+		Value := users[rand.Intn(len(users))]
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:            []byte(key),
+			Value:          []byte(Value),
 		}, nil)
 	}
 
-	// Wait for all messages to be delivered
 	p.Flush(15 * 1000)
 	p.Close()
 }

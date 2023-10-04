@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/hulla-hoop/testSobes/internal/config"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
 )
 
@@ -18,20 +19,22 @@ type KafkaConsumer struct {
 	wg        *sync.WaitGroup
 	inflogger *log.Logger
 	errLogger *log.Logger
+	cfgKafk   *config.Configkafka
 }
 
-func New(c *kafka.Consumer, wg *sync.WaitGroup, inflogger *log.Logger, errLogger *log.Logger) *KafkaConsumer {
+func New(c *kafka.Consumer, wg *sync.WaitGroup, inflogger *log.Logger, errLogger *log.Logger, cfgKafk *config.Configkafka) *KafkaConsumer {
 	return &KafkaConsumer{
 		c:         c,
 		wg:        wg,
 		inflogger: inflogger,
 		errLogger: errLogger,
+		cfgKafk:   cfgKafk,
 	}
 }
 
 func (c *KafkaConsumer) Consumer(f chan modeldb.User) {
 
-	topic := "FIO"
+	topic := c.cfgKafk.Topic
 	err := c.c.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
 		c.errLogger.Println(err)

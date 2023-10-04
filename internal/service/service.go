@@ -7,27 +7,22 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"sync"
 	"time"
 
+	"github.com/hulla-hoop/testSobes/internal/config"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
-	"github.com/hulla-hoop/testSobes/internal/psql"
 	"github.com/pkg/errors"
 )
 
 type Service struct {
-	wg        *sync.WaitGroup
-	db        *psql.Psql
-	inflogger *log.Logger
 	errLogger *log.Logger
+	cfg       *config.ConfigApi
 }
 
-func New(wg *sync.WaitGroup, db *psql.Psql, inflogger *log.Logger, errLogger *log.Logger) *Service {
+func New(errLogger *log.Logger, cfg *config.ConfigApi) *Service {
 	return &Service{
-		wg:        wg,
-		db:        db,
-		inflogger: inflogger,
 		errLogger: errLogger,
+		cfg:       cfg,
 	}
 }
 
@@ -37,31 +32,33 @@ type Age struct {
 	Age   int    `json:"age"`
 }
 
-func (s *Service) EncrimentAge(u modeldb.User) (modeldb.User, error) {
+func (s *Service) EncrimentAge(uName string) (int, error) {
 	userAge := Age{}
-	url := (fmt.Sprintf("https://api.agify.io/?name=%s", u.Name))
+	url := (fmt.Sprintf(s.cfg.AGEAPI, uName))
 	r, err := http.Get(url)
 	if err != nil {
-		s.errLogger.Println("Server is not available. Check connection")
+		s.errLogger.Println("Server is not available. Check connection", err)
 		time.Sleep(5 * time.Second)
-		u, err = s.EncrimentAge(u)
-		return u, nil
+		age, err := s.EncrimentAge(uName)
+		if err != nil {
+			return 0, err
+		}
+		return age, nil
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		s.errLogger.Println(err)
-		return modeldb.User{}, err
+		return 0, err
 	}
 
 	err = json.Unmarshal(body, &userAge)
 	if err != nil {
 		s.errLogger.Println(err)
-		return modeldb.User{}, err
+		return 0, err
 	}
 
-	u.Age = userAge.Age
-	return u, nil
+	return userAge.Age, nil
 }
 
 type Gender struct {
@@ -70,29 +67,31 @@ type Gender struct {
 	Gender string `json:"gender"`
 }
 
-func (s *Service) EncrimentGender(u modeldb.User) (modeldb.User, error) {
+func (s *Service) EncrimentGender(uName string) (string, error) {
 	userGender := Gender{}
-	url := (fmt.Sprintf("https://api.genderize.io/?name=%s", u.Name))
+	url := (fmt.Sprintf(s.cfg.GENDERAPI, uName))
 	r, err := http.Get(url)
 	if err != nil {
 		s.errLogger.Println("Server is not available. Check connection")
 		time.Sleep(5 * time.Second)
-		u, err = s.EncrimentGender(u)
-		return u, nil
+		name, err := s.EncrimentGender(uName)
+		if err != nil {
+			return "", err
+		}
+		return name, nil
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return modeldb.User{}, errors.Wrap(err, "Internal server error")
+		return "", errors.Wrap(err, "Internal server error")
 	}
 
 	err = json.Unmarshal(body, &userGender)
 	if err != nil {
-		return modeldb.User{}, errors.Wrap(err, "Internal server error")
+		return "", errors.Wrap(err, "Internal server error")
 	}
 
-	u.Gender = userGender.Gender
-	return u, nil
+	return userGender.Gender, nil
 }
 
 type Country struct {
@@ -106,33 +105,35 @@ type Natonality struct {
 	Country []Country
 }
 
-func (s *Service) EncrimentCountry(u modeldb.User) (modeldb.User, error) {
+func (s *Service) EncrimentCountry(uName string) (string, error) {
 	userNati := Natonality{}
-	url := (fmt.Sprintf("https://api.nationalize.io/?name=%s", u.Name))
+	url := (fmt.Sprintf(s.cfg.NATIONAPI, uName))
 	r, err := http.Get(url)
 
 	if err != nil {
 
 		s.errLogger.Println("Server is not available. Check connection")
 		time.Sleep(5 * time.Second)
-		u, err = s.EncrimentCountry(u)
-		return u, nil
+		name, err := s.EncrimentCountry(uName)
+		if err != nil {
+			return "", err
+		}
+		return name, nil
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		s.errLogger.Println(err)
-		return modeldb.User{}, err
+		return "", errors.Wrap(err, "Internal server error")
 	}
 
 	err = json.Unmarshal(body, &userNati)
 	if err != nil {
 		s.errLogger.Println(err)
-		return modeldb.User{}, err
+		return "", errors.Wrap(err, "Internal server error")
 	}
 
-	u.Nationality = userNati.Country[0].CountryId
-	return u, nil
+	return userNati.Country[0].CountryId, nil
 }
 
 func (s *Service) CheckErr(U modeldb.User) (string, bool) {
@@ -158,4 +159,26 @@ func (s *Service) CheckErr(U modeldb.User) (string, bool) {
 
 	return "", true
 
+}
+
+func (s *Service) Encriment(u modeldb.User) (modeldb.User, error) {
+	var err error
+	u.Age, err = s.EncrimentAge(u.Name)
+	if err != nil {
+		return modeldb.User{}, err
+	}
+
+	u.Gender, err = s.EncrimentGender(u.Name)
+	if err != nil {
+		return modeldb.User{}, err
+	}
+
+	u.Nationality, err = s.EncrimentCountry(u.Name)
+	if err != nil {
+		return modeldb.User{}, err
+	}
+
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
+	return u, nil
 }
