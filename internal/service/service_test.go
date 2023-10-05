@@ -104,16 +104,42 @@ func TestCheckErr(t *testing.T) {
 			wantBool: false,
 		},
 		{
-			name: "u5",
+			name: "u7",
 			user: modeldb.User{
 				Surname: ""},
 			want:     "Нет обязательного поля",
 			wantBool: false,
 		},
 		{
-			name:     "u5",
+			name:     "u8",
 			user:     modeldb.User{Name: "Shamil"},
 			want:     "Нет обязательного поля",
+			wantBool: false,
+		}, {
+			name:     "u9",
+			user:     modeldb.User{Name: "Sh am l", Surname: "Suleimanov"},
+			want:     "Нет обязательного поля",
+			wantBool: false,
+		}, {
+			name: "u10",
+			user: modeldb.User{Name: "Shamil",
+				Surname:    "Suleimanov",
+				Patronymic: ""},
+			want:     "",
+			wantBool: true,
+		}, {
+			name: "u11",
+			user: modeldb.User{Name: "Shamil",
+				Surname:    "Suleimanov",
+				Patronymic: "Alievich444"},
+			want:     "",
+			wantBool: false,
+		},
+		{
+			name: "u12",
+			user: modeldb.User{Name: " Shamil",
+				Surname: "Suleimanov"},
+			want:     "Неверный формат поля имя",
 			wantBool: false,
 		},
 	}
@@ -121,7 +147,7 @@ func TestCheckErr(t *testing.T) {
 		t.Run(d.name, func(t *testing.T) {
 			result, ist := s.CheckErr(d.user)
 			if ist != d.wantBool {
-				t.Errorf("Expected %t | %s , got %t  | %s", d.wantBool, d.want, ist, result)
+				t.Errorf("Expected %t | %v , got %t  | %v", d.wantBool, d.want, ist, result)
 			}
 		})
 	}

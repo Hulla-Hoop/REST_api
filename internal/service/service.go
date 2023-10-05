@@ -147,14 +147,26 @@ func (s *Service) CheckErr(U modeldb.User) (string, bool) {
 		s.errLogger.Println(err)
 	}
 	if r == false {
-		return ("Неверный формат"), r
+		return "Неверный формат поля имя", r
 	}
+
 	r, err = regexp.MatchString("^[a-zA-Z]+$", U.Surname)
 	if err != nil {
 		fmt.Println(err)
 	}
 	if r == false {
-		return "Неверный формат", r
+		return "Неверный формат поля фамилия", r
+	}
+	if U.Patronymic == "" {
+		return "", true
+	} else {
+		r, err = regexp.MatchString("^[a-zA-Z]+$", U.Patronymic)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if r == false {
+			return "Неверный формат поля отчество", r
+		}
 	}
 
 	return "", true
