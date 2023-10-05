@@ -14,11 +14,18 @@ import (
 	"github.com/hulla-hoop/testSobes/internal/psql"
 	"github.com/hulla-hoop/testSobes/internal/service"
 	"github.com/hulla-hoop/testSobes/pkg/app"
+	"github.com/joho/godotenv"
 )
 
 var wg sync.WaitGroup
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
 	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
 	psql := psql.InitDb()

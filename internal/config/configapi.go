@@ -1,10 +1,7 @@
 package config
 
 import (
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type ConfigApi struct {
@@ -15,10 +12,10 @@ type ConfigApi struct {
 
 func NewCfgApi() *ConfigApi {
 
-	err := godotenv.Load()
+	/* err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
-	}
+	} */
 
 	return &ConfigApi{
 		AGEAPI:    os.Getenv("AGEAPI"),

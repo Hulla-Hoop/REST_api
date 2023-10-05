@@ -11,11 +11,21 @@ import (
 	"github.com/hulla-hoop/testSobes/internal/service"
 )
 
-func Test_Encrement(t *testing.T) {
+var s *service.Service
 
+func TestMain(m *testing.M) {
+	os.Setenv("AGEAPI", "https://api.agify.io/?name=%s")
+	os.Setenv("NATIONAPI", "https://api.nationalize.io/?name=%s")
+	os.Setenv("GENDERAPI", "https://api.genderize.io/?name=%s")
 	e := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
 	cfgT := config.NewCfgApi()
-	s := service.New(e, cfgT)
+	s = service.New(e, cfgT)
+	exitVal := m.Run()
+	os.Exit(exitVal)
+
+}
+
+func TestEncrement(t *testing.T) {
 
 	userTest := modeldb.User{
 		Name:       "Dmitriy",
@@ -40,6 +50,80 @@ func Test_Encrement(t *testing.T) {
 
 	if diff := cmp.Diff(userExpected, result, comparer); diff != "" {
 		t.Errorf(diff, err)
+	}
+
+}
+
+func TestCheckErr(t *testing.T) {
+
+	data := []struct {
+		name     string
+		user     modeldb.User
+		want     string
+		wantBool bool
+	}{
+		{
+			name: "u1",
+			user: modeldb.User{Name: "Shamil",
+				Surname: "Suleimanov"},
+			want:     "",
+			wantBool: true,
+		},
+		{
+			name: "u2",
+			user: modeldb.User{Name: "Sha111mil",
+				Surname: "Suleimanov"},
+			want:     "Неверный формат",
+			wantBool: false,
+		},
+		{
+			name: "u3",
+			user: modeldb.User{Name: "Shamil",
+				Surname: "Suleima1111nov"},
+			want:     "Неверный формат",
+			wantBool: false,
+		},
+		{
+			name: "u4",
+			user: modeldb.User{Name: "",
+				Surname: "Suleima1111nov"},
+			want:     "Нет обязательного поля",
+			wantBool: false,
+		}, {
+			name: "u5",
+			user: modeldb.User{Name: "Shamil",
+				Surname: ""},
+			want:     "Нет обязательного поля",
+			wantBool: false,
+		},
+		{
+			name: "u6",
+			user: modeldb.User{Name: "Sham%il",
+				Surname: ""},
+			want:     "Неверный формат",
+			wantBool: false,
+		},
+		{
+			name: "u5",
+			user: modeldb.User{
+				Surname: ""},
+			want:     "Нет обязательного поля",
+			wantBool: false,
+		},
+		{
+			name:     "u5",
+			user:     modeldb.User{Name: "Shamil"},
+			want:     "Нет обязательного поля",
+			wantBool: false,
+		},
+	}
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+			result, ist := s.CheckErr(d.user)
+			if ist != d.wantBool {
+				t.Errorf("Expected %t | %s , got %t  | %s", d.wantBool, d.want, ist, result)
+			}
+		})
 	}
 
 }
