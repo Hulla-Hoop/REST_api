@@ -8,7 +8,7 @@ import (
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
 )
 
-func (p *Psql) Create(U modeldb.User) error {
+func (p *Psqlgorm) Create(U modeldb.User) error {
 	if U.Name == "" || U.Surname == "" {
 
 		return errors.New("Нет обязательного поля")

@@ -28,7 +28,7 @@ func main() {
 
 	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
 	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
-	psql := psql.InitDb()
+	psql := psql.InitDbGorm()
 
 	a := app.New(psql, infLogger, errLogger)
 

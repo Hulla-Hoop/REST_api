@@ -11,5 +11,5 @@ import (
 
 type Resolver struct {
 	user []*modelgql.User
-	DB   *psql.Psql
+	DB   *psql.Psqlgorm
 }

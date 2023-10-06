@@ -12,12 +12,12 @@ import (
 )
 
 type Endpoint struct {
-	Db        *psql.Psql
+	Db        *psql.Psqlgorm
 	inflogger *log.Logger
 	errLogger *log.Logger
 }
 
-func New(db *psql.Psql, inflogger *log.Logger, errLogger *log.Logger) *Endpoint {
+func New(db *psql.Psqlgorm, inflogger *log.Logger, errLogger *log.Logger) *Endpoint {
 	return &Endpoint{Db: db,
 		inflogger: inflogger,
 		errLogger: errLogger}

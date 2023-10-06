@@ -15,12 +15,12 @@ import (
 type App struct {
 	e         *echoendpoint.Endpoint
 	echo      *echo.Echo
-	psql      *psql.Psql
+	psql      *psql.Psqlgorm
 	inflogger *log.Logger
 	errLogger *log.Logger
 }
 
-func New(db *psql.Psql, inflogger *log.Logger, errLogger *log.Logger) *App {
+func New(db *psql.Psqlgorm, inflogger *log.Logger, errLogger *log.Logger) *App {
 	a := App{}
 
 	a.psql = db
