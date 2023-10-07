@@ -28,7 +28,7 @@ type Servicer interface {
 
 // Функция обогащает верные сообщения и ложит в БД, невернные сообщения отправляются в очередь FIO_FAILED
 
-func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, infoLogger *log.Logger, errLogger *log.Logger, wg *sync.WaitGroup, db *psql.Psqlgorm) {
+func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, infoLogger *log.Logger, errLogger *log.Logger, wg *sync.WaitGroup, db psql.DB) {
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -47,7 +47,7 @@ func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, info
 			if chek {
 				User, err := s.Encriment(User)
 				infoLogger.Println("Сообщение готово к хранению в БД", User)
-				err = db.Create(User)
+				err = db.Create(&User)
 				if err != nil {
 					errLogger.Println(err)
 				}

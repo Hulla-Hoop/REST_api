@@ -30,7 +30,7 @@ func (e *Endpoint) Insert(c echo.Context) error {
 		e.errLogger.Println(err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
-	e.Db.Create(u)
+	e.Db.Create(&u)
 	return c.JSON(http.StatusCreated, u)
 }
 

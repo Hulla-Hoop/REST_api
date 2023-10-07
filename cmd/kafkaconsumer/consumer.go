@@ -28,9 +28,13 @@ func main() {
 
 	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
 	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
-	psql := psql.InitDbGorm()
+	sqlGorm := psql.InitDbGorm()
+	db, err := psql.InitDb()
+	if err != nil {
+		fmt.Println("пиздец нахуя блять")
+	}
 
-	a := app.New(psql, infLogger, errLogger)
+	a := app.New(sqlGorm, infLogger, errLogger)
 
 	go a.Start()
 
@@ -71,7 +75,7 @@ func main() {
 	consumer := consumer.New(c, &wg, infLogger, errLogger, config)
 
 	go consumer.Consumer(UserChan)
-	go service.Distribution(s, UserChan, UserChanFailed, infLogger, errLogger, &wg, psql)
+	go service.Distribution(s, UserChan, UserChanFailed, infLogger, errLogger, &wg, db)
 	go producer.Producer(UserChanFailed)
 
 	wg.Wait()
