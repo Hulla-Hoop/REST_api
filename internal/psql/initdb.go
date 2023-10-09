@@ -10,7 +10,10 @@ import (
 )
 
 type DB interface {
-	Create(*modeldb.User) error
+	Create(user *modeldb.User) error
+	Deleate(id int) error
+	InsertAll(id int) ([]modeldb.User, error)
+	Update(user *modeldb.User, id int) error
 }
 
 type sqlPostgres struct {
