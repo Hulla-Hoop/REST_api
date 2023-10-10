@@ -31,7 +31,7 @@ func main() {
 	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
 
 	//Инициализируем базу данных с gorm библиотекой
-	sqlGorm := psql.InitDbGorm()
+	/* sqlGorm := psql.InitDbGorm() */
 
 	//Инициализируем базу данных с стандартной библиотекой
 	db, err := psql.InitDb()
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	//Инициализируем echo роутер и запскаем его
-	a := app.New(sqlGorm, infLogger, errLogger)
+	a := app.New(db, infLogger, errLogger)
 
 	go a.Start()
 

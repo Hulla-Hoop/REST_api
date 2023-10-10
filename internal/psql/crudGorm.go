@@ -38,12 +38,17 @@ func (p *Psqlgorm) Create(U *modeldb.User) error {
 
 }
 
-func (p *Psqlgorm) Deleate(id int) error {
+func (p *Psqlgorm) Delete(id int) error {
+
+	p.Db.Delete(id)
 	return nil
 }
-func (p *Psqlgorm) InsertAll(id int) ([]modeldb.User, error) {
+func (p *Psqlgorm) InsertAll() ([]modeldb.User, error) {
+
 	return nil, nil
 }
 func (p *Psqlgorm) Update(user *modeldb.User, id int) error {
+	user.Id = uint(id)
+	p.Db.Save(user)
 	return nil
 }

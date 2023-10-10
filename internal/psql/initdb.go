@@ -11,8 +11,8 @@ import (
 
 type DB interface {
 	Create(user *modeldb.User) error
-	Deleate(id int) error
-	InsertAll(id int) ([]modeldb.User, error)
+	Delete(id int) error
+	InsertAll() ([]modeldb.User, error)
 	Update(user *modeldb.User, id int) error
 }
 

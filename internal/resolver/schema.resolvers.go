@@ -6,7 +6,7 @@ package resolver
 
 import (
 	"context"
-	"math"
+	"time"
 
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
 	"github.com/hulla-hoop/testSobes/internal/modelgql"
@@ -20,7 +20,13 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input modelgql.NewUse
 		Age:     *input.Age,
 	}
 
-	err := r.DB.Db.Create(&AddUser).Error
+	user := modeldb.User{
+		Name:    AddUser.Name,
+		Surname: AddUser.Surname,
+		Age:     AddUser.Age,
+	}
+
+	err := r.DB.Create(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +44,16 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, userID int, input *mo
 		Gender:      *input.Gender,
 		Nationality: *input.Nationality,
 	}
-	id := uint(userID)
-	err := r.DB.Db.Model(&modeldb.User{}).Where("id=?", id).Updates(&UpdateUser).Error
+	user := modeldb.User{
+		UpdatedAt:   time.Now(),
+		Name:        UpdateUser.Name,
+		Surname:     UpdateUser.Surname,
+		Patronymic:  UpdateUser.Patronymic,
+		Age:         UpdateUser.Age,
+		Gender:      UpdateUser.Gender,
+		Nationality: UpdateUser.Nationality,
+	}
+	err := r.DB.Update(&user, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,17 +64,32 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, userID int, input *mo
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*modelgql.User, error) {
 	f := []*modelgql.User{}
+	u := []modeldb.User{}
 
-	r.DB.Db.Model(&f).Find(&f)
+	u, err := r.DB.InsertAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range u {
+		f = append(f, &modelgql.User{
+			Name:        t.Name,
+			Surname:     t.Surname,
+			Patronymic:  t.Patronymic,
+			Age:         t.Age,
+			Gender:      t.Gender,
+			Nationality: t.Nationality,
+		})
+	}
 
 	return f, nil
 }
 
 // Pages is the resolver for the pages field.
 func (r *queryResolver) Pages(ctx context.Context, page int) ([]*modelgql.User, error) {
-	var UserCount int
+	/* var UserCount int */
 
-	err := r.DB.Db.Table("users").Count(&UserCount).Error
+	/* err := r.DB.Db.Table("users").Count(&UserCount).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,16 +107,16 @@ func (r *queryResolver) Pages(ctx context.Context, page int) ([]*modelgql.User, 
 
 	}
 
-	offset := (page - 1) * UserPerPage
+	offset := (page - 1) * UserPerPage */
 
 	users := []*modelgql.User{}
 
-	err = r.DB.Db.Limit(UserPerPage).Offset(offset).Find(&users).Error
+	/* err = r.DB.Db.Limit(UserPerPage).Offset(offset).Find(&users).Error
 	if err != nil {
 		return nil, err
-	}
+	} */
 
-	return users, err
+	return users, nil
 }
 
 // Mutation returns MutationResolver implementation.

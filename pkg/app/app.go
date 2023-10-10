@@ -15,12 +15,12 @@ import (
 type App struct {
 	e         *echoendpoint.Endpoint
 	echo      *echo.Echo
-	psql      *psql.Psqlgorm
+	psql      psql.DB
 	inflogger *log.Logger
 	errLogger *log.Logger
 }
 
-func New(db *psql.Psqlgorm, inflogger *log.Logger, errLogger *log.Logger) *App {
+func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
 	a := App{}
 
 	a.psql = db
@@ -49,11 +49,11 @@ func New(db *psql.Psqlgorm, inflogger *log.Logger, errLogger *log.Logger) *App {
 	})
 
 	a.echo.POST("/user", a.e.Insert)
-	a.echo.GET("/userage", a.e.AgeSort)
+	/* a.echo.GET("/userage", a.e.AgeSort) */
 	a.echo.DELETE("/user/:id", a.e.Delete)
 	a.echo.PUT("/user/:id", a.e.Update)
-	a.echo.GET("/user/:nat", a.e.NatFilter)
-	a.echo.GET("/user/:page", a.e.UserPagination)
+	/* a.echo.GET("/user/:nat", a.e.NatFilter)
+	a.echo.GET("/user/:page", a.e.UserPagination) */
 
 	return &a
 

@@ -51,7 +51,7 @@ func (db *sqlPostgres) Update(user *modeldb.User, id int) error {
 	return nil
 }
 
-func (db *sqlPostgres) Deleate(id int) error {
+func (db *sqlPostgres) Delete(id int) error {
 	result, err := db.dB.Exec("delete from users where id = $1", id)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (db *sqlPostgres) Deleate(id int) error {
 	return nil
 }
 
-func (db *sqlPostgres) InsertAll(id int) ([]modeldb.User, error) {
+func (db *sqlPostgres) InsertAll() ([]modeldb.User, error) {
 	rows, err := db.dB.Query("select * from users")
 	if err != nil {
 		return nil, err
