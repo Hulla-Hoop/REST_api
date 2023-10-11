@@ -81,17 +81,35 @@ func (e *Endpoint) NatFilter(c echo.Context) error {
 	users := []modeldb.User{}
 	e.Db.Db.Raw("SELECT * FROM users WHERE age = ?", national).Scan(&users)
 	return c.JSON(http.StatusOK, users)
-}
+} */
 
 func (e *Endpoint) UserPagination(c echo.Context) error {
-	pageStr := c.Param("page")
+	valueStr, err := c.FormParams()
 
-	page, err := strconv.Atoi(pageStr)
+	pageStr := valueStr["page"]
+	limitStr := valueStr["limit"]
+
+	e.inflogger.Println(pageStr, limitStr)
+
+	page, err := strconv.Atoi(pageStr[0])
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+	limit, err := strconv.Atoi(limitStr[0])
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	var UserCount int
+	u, err := e.Db.InsertPage(uint(page), limit)
+	if err != nil {
+		e.errLogger.Println(err)
+		return c.JSON(http.StatusInternalServerError, nil)
+
+	}
+
+	return c.JSON(http.StatusOK, u)
+
+	/*var UserCount int
 
 	err = e.Db.Db.Table("users").Count(&UserCount).Error
 	if err != nil {
@@ -120,5 +138,5 @@ func (e *Endpoint) UserPagination(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	return c.JSON(http.StatusInternalServerError, users)
-} */
+	return c.JSON(http.StatusInternalServerError, users) */
+}

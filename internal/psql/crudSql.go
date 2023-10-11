@@ -35,7 +35,10 @@ func (db *sqlPostgres) Create(user *modeldb.User) error {
 }
 
 func (db *sqlPostgres) Update(user *modeldb.User, id int) error {
-	result, err := db.dB.Exec("update users set created_at = $1,updated_at=$2,name=$3,surname=$4,patronymic=$5,age=$6,gender=$7,nationality=$8 where id=$9",
+	result, err := db.dB.Exec(
+		"UPDATE users "+
+			"SET created_at = $1,updated_at=$2,name=$3,surname=$4,patronymic=$5,age=$6,gender=$7,nationality=$8 "+
+			"WHERE id=$9",
 		user.CreatedAt,
 		user.UpdatedAt,
 		user.Name,
@@ -52,7 +55,11 @@ func (db *sqlPostgres) Update(user *modeldb.User, id int) error {
 }
 
 func (db *sqlPostgres) Delete(id int) error {
-	result, err := db.dB.Exec("delete from users where id = $1", id)
+	result, err := db.dB.Exec(
+		"DELETE"+
+			"FROM users"+
+			"WHERE id = $1",
+		id)
 	if err != nil {
 		return err
 	}
@@ -61,7 +68,9 @@ func (db *sqlPostgres) Delete(id int) error {
 }
 
 func (db *sqlPostgres) InsertAll() ([]modeldb.User, error) {
-	rows, err := db.dB.Query("select * from users")
+	rows, err := db.dB.Query(
+		"SELECT id,name,surname,patronymic,age,gender,nationality" +
+			"FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -71,11 +80,50 @@ func (db *sqlPostgres) InsertAll() ([]modeldb.User, error) {
 
 	for rows.Next() {
 		u := modeldb.User{}
-		err := rows.Scan(&u.Id, &u.CreatedAt, &u.UpdatedAt, &u.Name, &u.Surname, &u.Patronymic, &u.Age, &u.Gender, &u.Nationality)
+
+		err := rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Patronymic, &u.Age, &u.Gender, &u.Nationality)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
+		user = append(user, u)
+	}
+
+	return user, nil
+}
+
+func (db *sqlPostgres) InsertPage(page uint, limit int) ([]modeldb.User, error) {
+
+	var cashPage uint = 1
+	if page == 1 {
+		cashPage = 0
+	} else {
+		cashPage = page*uint(limit) - 1
+	}
+
+	rows, err := db.dB.Query(
+		"SELECT id,name,surname,patronymic,age,gender,nationality "+
+			"FROM users "+
+			"WHERE id > $1 "+
+			"ORDER BY id ASC "+
+			"LIMIT $2 ", cashPage, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	user := []modeldb.User{}
+
+	for rows.Next() {
+		u := modeldb.User{}
+
+		err := rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Patronymic, &u.Age, &u.Gender, &u.Nationality)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		cashPage = u.Id
 		user = append(user, u)
 	}
 

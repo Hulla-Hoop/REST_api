@@ -21,9 +21,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input modelgql.NewUse
 	}
 
 	user := modeldb.User{
-		Name:    AddUser.Name,
-		Surname: AddUser.Surname,
-		Age:     AddUser.Age,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      AddUser.Name,
+		Surname:   AddUser.Surname,
+		Age:       AddUser.Age,
 	}
 
 	err := r.DB.Create(&user)
@@ -73,6 +75,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*modelgql.User, error) {
 
 	for _, t := range u {
 		f = append(f, &modelgql.User{
+			ID:          int(t.Id),
 			Name:        t.Name,
 			Surname:     t.Surname,
 			Patronymic:  t.Patronymic,

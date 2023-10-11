@@ -52,8 +52,8 @@ func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
 	/* a.echo.GET("/userage", a.e.AgeSort) */
 	a.echo.DELETE("/user/:id", a.e.Delete)
 	a.echo.PUT("/user/:id", a.e.Update)
-	/* a.echo.GET("/user/:nat", a.e.NatFilter)
-	a.echo.GET("/user/:page", a.e.UserPagination) */
+	//a.echo.GET("/user/:nat", a.e.NatFilter)
+	a.echo.GET("/user/", a.e.UserPagination)
 
 	return &a
 
