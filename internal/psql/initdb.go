@@ -15,6 +15,7 @@ type DB interface {
 	InsertAll() ([]modeldb.User, error)
 	Update(user *modeldb.User, id int) error
 	InsertPage(page uint, limit int) ([]modeldb.User, error)
+	Sort(field string) ([]modeldb.User, error)
 }
 
 type sqlPostgres struct {

@@ -129,3 +129,34 @@ func (db *sqlPostgres) InsertPage(page uint, limit int) ([]modeldb.User, error) 
 
 	return user, nil
 }
+
+func (db *sqlPostgres) Sort(field string) ([]modeldb.User, error) {
+
+	query := "SELECT id,name,surname,patronymic,age,gender,nationality " +
+		"FROM users " +
+		"ORDER BY %s"
+
+	queryR := fmt.Sprintf(query, field)
+
+	rows, err := db.dB.Query(queryR)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	user := []modeldb.User{}
+
+	for rows.Next() {
+		u := modeldb.User{}
+
+		err := rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Patronymic, &u.Age, &u.Gender, &u.Nationality)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		user = append(user, u)
+	}
+
+	return user, nil
+}

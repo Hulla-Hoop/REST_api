@@ -70,13 +70,29 @@ func (e *Endpoint) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, u)
 }
 
-/* func (e *Endpoint) AgeSort(c echo.Context) error {
+func (e *Endpoint) Sort(c echo.Context) error {
 	users := []modeldb.User{}
-	e.Db.Db.Raw("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY age").Scan(&users)
+
+	valueStr, err := c.FormParams()
+	if err != nil {
+		e.errLogger.Println(err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	field := valueStr["sort"]
+	e.inflogger.Println(field[0])
+
+	users, err = e.Db.Sort(field[0])
+	if err != nil {
+		e.errLogger.Println(err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	/* e.Db.Db.Raw("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY age").Scan(&users) */
 	return c.JSON(http.StatusOK, users)
 }
 
-func (e *Endpoint) NatFilter(c echo.Context) error {
+/* func (e *Endpoint) NatFilter(c echo.Context) error {
 	national, _ := strconv.Atoi(c.Param("nat"))
 	users := []modeldb.User{}
 	e.Db.Db.Raw("SELECT * FROM users WHERE age = ?", national).Scan(&users)
