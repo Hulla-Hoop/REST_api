@@ -88,16 +88,8 @@ func (e *Endpoint) Sort(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	/* e.Db.Db.Raw("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY age").Scan(&users) */
 	return c.JSON(http.StatusOK, users)
 }
-
-/* func (e *Endpoint) NatFilter(c echo.Context) error {
-	national, _ := strconv.Atoi(c.Param("nat"))
-	users := []modeldb.User{}
-	e.Db.Db.Raw("SELECT * FROM users WHERE age = ?", national).Scan(&users)
-	return c.JSON(http.StatusOK, users)
-} */
 
 func (e *Endpoint) UserPagination(c echo.Context) error {
 	valueStr, err := c.FormParams()
@@ -125,34 +117,4 @@ func (e *Endpoint) UserPagination(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, u)
 
-	/*var UserCount int
-
-	err = e.Db.Db.Table("users").Count(&UserCount).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
-	}
-
-	UserPerPage := 3
-
-	pageCount := int(math.Ceil(float64(UserCount) / float64(UserPerPage)))
-
-	if pageCount == 0 {
-		pageCount = 1
-	}
-	if page > pageCount {
-
-		return c.JSON(http.StatusInternalServerError, nil)
-
-	}
-
-	offset := (page - 1) * UserPerPage
-
-	users := []modeldb.User{}
-
-	err = e.Db.Db.Limit(UserPerPage).Offset(offset).Find(&users).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
-	}
-
-	return c.JSON(http.StatusInternalServerError, users) */
 }
