@@ -160,3 +160,44 @@ func (db *sqlPostgres) Sort(field string) ([]modeldb.User, error) {
 
 	return user, nil
 }
+
+func (db *sqlPostgres) Filter(field string, operator string, value string) ([]modeldb.User, error) {
+
+	query := "SELECT id,name,surname,patronymic,age,gender,nationality " +
+		"FROM users " +
+		"WHERE %s %s %s "
+
+	operatorMap := make(map[string]string)
+
+	operatorMap["eq"] = "="
+	operatorMap["ne"] = "!="
+	operatorMap["gt"] = ">"
+	operatorMap["ge"] = ">="
+	operatorMap["lt"] = "<"
+	operatorMap["le"] = "<="
+
+	q := fmt.Sprintf(query, field, operatorMap[operator], value)
+
+	rows, err := db.dB.Query(q)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	user := []modeldb.User{}
+
+	for rows.Next() {
+		u := modeldb.User{}
+
+		err := rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Patronymic, &u.Age, &u.Gender, &u.Nationality)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		user = append(user, u)
+	}
+
+	return user, nil
+
+}

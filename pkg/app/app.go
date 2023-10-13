@@ -49,10 +49,18 @@ func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
 	})
 
 	a.echo.POST("/user", a.e.Insert)
-	a.echo.GET("/user/sort/", a.e.Sort)
+
+	// /user/sort?sort=value
+	a.echo.GET("/user/sort", a.e.Sort)
 	a.echo.DELETE("/user/:id", a.e.Delete)
 	a.echo.PUT("/user/:id", a.e.Update)
-	//a.echo.GET("/user/:nat", a.e.NatFilter)
+
+	// /user/filter?needField=lt|le|gt|ge|eq|ne value
+	// в данной примере фильтрация возможна по одному полю и без сортировки результата
+	// в дальнейшем планируется написать сортировку и фильтрацию через middleware
+	a.echo.GET("/user/filter", a.e.UserFilter)
+
+	// /user/?page=value&limit=value
 	a.echo.GET("/user/", a.e.UserPagination)
 
 	return &a

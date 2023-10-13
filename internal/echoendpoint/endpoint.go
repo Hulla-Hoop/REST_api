@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
@@ -70,6 +71,8 @@ func (e *Endpoint) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, u)
 }
 
+//сортировка без Middleware
+
 func (e *Endpoint) Sort(c echo.Context) error {
 	users := []modeldb.User{}
 
@@ -78,10 +81,11 @@ func (e *Endpoint) Sort(c echo.Context) error {
 		e.errLogger.Println(err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
+	/* testString := c.QueryParam("sort")
+	e.inflogger.Println(testString) */
 
 	field := valueStr["sort"]
 	e.inflogger.Println(field[0])
-
 	users, err = e.Db.Sort(field[0])
 	if err != nil {
 		e.errLogger.Println(err)
@@ -91,8 +95,13 @@ func (e *Endpoint) Sort(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
+//Пагинация через Limit без Offset
+
 func (e *Endpoint) UserPagination(c echo.Context) error {
 	valueStr, err := c.FormParams()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
 
 	pageStr := valueStr["page"]
 	limitStr := valueStr["limit"]
@@ -117,4 +126,23 @@ func (e *Endpoint) UserPagination(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, u)
 
+}
+
+func (e *Endpoint) UserFilter(c echo.Context) error {
+
+	valueStr, err := c.FormParams()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+	for p, count := range valueStr {
+		if p != "age" && p != "name" && p != "surname" && p != "patronumic" && p != "gender" && p != "nationality" && p != "id" {
+			continue
+		}
+		param := strings.Split(count[0], " ")
+		e.inflogger.Println(param[0], param[1])
+		e.Db.Filter(p, param[0], param[1])
+
+	}
+
+	return c.JSON(http.StatusOK, nil)
 }
