@@ -134,15 +134,25 @@ func (e *Endpoint) UserFilter(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	for p, count := range valueStr {
+
+	var validParam string
+
+	for p := range valueStr {
 		if p != "age" && p != "name" && p != "surname" && p != "patronumic" && p != "gender" && p != "nationality" && p != "id" {
 			continue
+		} else {
+			validParam = p
 		}
-		param := strings.Split(count[0], " ")
-		e.inflogger.Println(param[0], param[1])
-		e.Db.Filter(p, param[0], param[1])
+
+	}
+	param := strings.Split(valueStr[validParam][0], " ")
+	e.inflogger.Println(param[0], param[1])
+	u, err := e.Db.Filter(validParam, param[0], param[1])
+	if err != nil {
+		e.errLogger.Println(err)
+		return c.JSON(http.StatusInternalServerError, nil)
 
 	}
 
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, u)
 }
