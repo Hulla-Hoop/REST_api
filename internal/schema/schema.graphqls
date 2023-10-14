@@ -13,7 +13,8 @@ type User{
 
 type Query{
     users:[User!]!
-    pages(page:Int!):[User!]
+    pages(page:Int!,limit:Int!):[User!]
+    filters(filter:String!,operator:String!,value:String!):[User!]
     }
 
 input NewUser {

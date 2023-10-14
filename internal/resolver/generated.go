@@ -52,8 +52,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Pages func(childComplexity int, page int) int
-		Users func(childComplexity int) int
+		Filters func(childComplexity int, filter string, operator string, value string) int
+		Pages   func(childComplexity int, page int, limit int) int
+		Users   func(childComplexity int) int
 	}
 
 	User struct {
@@ -76,7 +77,8 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*modelgql.User, error)
-	Pages(ctx context.Context, page int) ([]*modelgql.User, error)
+	Pages(ctx context.Context, page int, limit int) ([]*modelgql.User, error)
+	Filters(ctx context.Context, filter string, operator string, value string) ([]*modelgql.User, error)
 }
 
 type executableSchema struct {
@@ -130,6 +132,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["UserId"].(int), args["input"].(*modelgql.NewUser)), true
 
+	case "Query.filters":
+		if e.complexity.Query.Filters == nil {
+			break
+		}
+
+		args, err := ec.field_Query_filters_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Filters(childComplexity, args["filter"].(string), args["operator"].(string), args["value"].(string)), true
+
 	case "Query.pages":
 		if e.complexity.Query.Pages == nil {
 			break
@@ -140,7 +154,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Pages(childComplexity, args["page"].(int)), true
+		return e.complexity.Query.Pages(childComplexity, args["page"].(int), args["limit"].(int)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -333,7 +347,8 @@ var sources = []*ast.Source{
 
 type Query{
     users:[User!]!
-    pages(page:Int!):[User!]
+    pages(page:Int!,limit:Int!):[User!]
+    filters(filter:String!,operator:String!,value:String!):[User!]
     }
 
 input NewUser {
@@ -429,6 +444,39 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_filters_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["operator"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operator"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["operator"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["value"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["value"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_pages_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -441,6 +489,15 @@ func (ec *executionContext) field_Query_pages_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["page"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
 	return args, nil
 }
 
@@ -765,7 +822,7 @@ func (ec *executionContext) _Query_pages(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Pages(rctx, fc.Args["page"].(int))
+		return ec.resolvers.Query().Pages(rctx, fc.Args["page"].(int), fc.Args["limit"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -817,6 +874,78 @@ func (ec *executionContext) fieldContext_Query_pages(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_pages_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_filters(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_filters(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Filters(rctx, fc.Args["filter"].(string), fc.Args["operator"].(string), fc.Args["value"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*modelgql.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋhullaᚑhoopᚋtestSobesᚋinternalᚋmodelgqlᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_filters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "surname":
+				return ec.fieldContext_User_surname(ctx, field)
+			case "patronymic":
+				return ec.fieldContext_User_patronymic(ctx, field)
+			case "age":
+				return ec.fieldContext_User_age(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "nationality":
+				return ec.fieldContext_User_nationality(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_filters_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3317,6 +3446,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_pages(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "filters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_filters(ctx, field)
 				return res
 			}
 

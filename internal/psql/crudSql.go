@@ -10,7 +10,8 @@ import (
 func (db *sqlPostgres) Create(user *modeldb.User) error {
 
 	var id int
-	err := db.dB.QueryRow("insert into users(created_at,updated_at,name,surname,patronymic,age,gender,nationality)  values ($1, $2,$3,$4,$5,$6,$7,$8) returning id",
+	err := db.dB.QueryRow("INSERT INTO users(created_at,updated_at,name,surname,patronymic,age,gender,nationality) "+
+		"VALUES ($1, $2,$3,$4,$5,$6,$7,$8) returning id",
 		user.CreatedAt,
 		user.UpdatedAt,
 		user.Name,
@@ -38,7 +39,7 @@ func (db *sqlPostgres) Update(user *modeldb.User, id int) error {
 	result, err := db.dB.Exec(
 		"UPDATE users "+
 			"SET created_at = $1,updated_at=$2,name=$3,surname=$4,patronymic=$5,age=$6,gender=$7,nationality=$8 "+
-			"WHERE id=$9",
+			"WHERE id=$9 ",
 		user.CreatedAt,
 		user.UpdatedAt,
 		user.Name,
@@ -69,8 +70,8 @@ func (db *sqlPostgres) Delete(id int) error {
 
 func (db *sqlPostgres) InsertAll() ([]modeldb.User, error) {
 	rows, err := db.dB.Query(
-		"SELECT id,name,surname,patronymic,age,gender,nationality" +
-			"FROM users")
+		"SELECT id,name,surname,patronymic,age,gender,nationality " +
+			"FROM users ")
 	if err != nil {
 		return nil, err
 	}

@@ -98,7 +98,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*modelgql.User, error) {
 }
 
 // Pages is the resolver for the pages field.
-func (r *queryResolver) Pages(ctx context.Context, page int) ([]*modelgql.User, error) {
+func (r *queryResolver) Pages(ctx context.Context, page int, limit int) ([]*modelgql.User, error) {
 	/* var UserCount int */
 
 	/* err := r.DB.Db.Table("users").Count(&UserCount).Error
@@ -129,6 +129,29 @@ func (r *queryResolver) Pages(ctx context.Context, page int) ([]*modelgql.User, 
 	} */
 
 	return users, nil
+}
+
+// Filters is the resolver for the filters field.
+func (r *queryResolver) Filters(ctx context.Context, filter string, operator string, value string) ([]*modelgql.User, error) {
+	users, err := r.DB.Filter(filter, operator, value)
+	if err != nil {
+		return nil, err
+	}
+	f := []*modelgql.User{}
+	for _, t := range users {
+		f = append(f, &modelgql.User{
+			ID:          int(t.Id),
+			Name:        t.Name,
+			Surname:     t.Surname,
+			Patronymic:  t.Patronymic,
+			Age:         t.Age,
+			Gender:      t.Gender,
+			Nationality: t.Nationality,
+		})
+	}
+
+	return f, nil
+
 }
 
 // Mutation returns MutationResolver implementation.
