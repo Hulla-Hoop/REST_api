@@ -63,6 +63,15 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, userID int, input *mo
 	return &UpdateUser, nil
 }
 
+// DeleteUser is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, userID int) (bool, error) {
+	err := r.DB.Delete(userID)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*modelgql.User, error) {
 	f := []*modelgql.User{}

@@ -28,6 +28,7 @@ input NewUser {
 type Mutation {
     createUser(input:NewUser!):User!
     updateUser(UserId:Int!,input:NewUser):User!
+    deleteUser(UserId:Int!):Boolean!
 }
 
 scalar Time

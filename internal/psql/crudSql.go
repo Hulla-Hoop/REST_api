@@ -56,9 +56,9 @@ func (db *sqlPostgres) Update(user *modeldb.User, id int) error {
 
 func (db *sqlPostgres) Delete(id int) error {
 	result, err := db.dB.Exec(
-		"DELETE"+
-			"FROM users"+
-			"WHERE id = $1",
+		"DELETE "+
+			"FROM users "+
+			"WHERE id = $1 ",
 		id)
 	if err != nil {
 		return err
