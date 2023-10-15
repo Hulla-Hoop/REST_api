@@ -121,14 +121,32 @@ func (r *queryResolver) Pages(ctx context.Context, page int, limit int) ([]*mode
 
 	offset := (page - 1) * UserPerPage */
 
-	users := []*modelgql.User{}
+	users, err := r.DB.InsertPage(uint(page), limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	f := []*modelgql.User{}
+
+	for _, t := range users {
+		f = append(f, &modelgql.User{
+			ID:          int(t.Id),
+			Name:        t.Name,
+			Surname:     t.Surname,
+			Patronymic:  t.Patronymic,
+			Age:         t.Age,
+			Gender:      t.Gender,
+			Nationality: t.Nationality,
+		})
+	}
 
 	/* err = r.DB.Db.Limit(UserPerPage).Offset(offset).Find(&users).Error
 	if err != nil {
 		return nil, err
 	} */
 
-	return users, nil
+	return f, nil
 }
 
 // Filters is the resolver for the filters field.
