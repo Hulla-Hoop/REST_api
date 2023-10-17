@@ -1,6 +1,9 @@
 package modeldb
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type User struct {
 	Id          uint `gorm:"autoIncrement" gorm:"primary_key"`
@@ -12,4 +15,14 @@ type User struct {
 	Age         int    `json:"age"`
 	Gender      string
 	Nationality string
+}
+
+func (i User) MarshalBinary() ([]byte, error) {
+	return json.Marshal(i)
+}
+
+type Users []User
+
+func (i Users) MarshalBinary() ([]byte, error) {
+	return json.Marshal(i)
 }

@@ -93,7 +93,7 @@ func (db *sqlPostgres) InsertAll() ([]modeldb.User, error) {
 	return user, nil
 }
 
-func (db *sqlPostgres) InsertPage(page uint, limit int) ([]modeldb.User, error) {
+func (db *sqlPostgres) InsertPage(page uint, limit int) (modeldb.Users, error) {
 
 	var cashPage uint = 1
 	if page == 1 {

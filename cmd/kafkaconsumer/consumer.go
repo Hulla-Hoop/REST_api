@@ -12,6 +12,7 @@ import (
 	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/producer"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
 	"github.com/hulla-hoop/testSobes/internal/psql"
+	"github.com/hulla-hoop/testSobes/internal/rediscash"
 	"github.com/hulla-hoop/testSobes/internal/service"
 	"github.com/hulla-hoop/testSobes/pkg/app"
 	"github.com/joho/godotenv"
@@ -39,8 +40,10 @@ func main() {
 		fmt.Println("пиздец нахуя блять")
 	}
 
+	rdb := rediscash.Init(db)
+
 	//Инициализируем echo роутер и запскаем его
-	a := app.New(db, infLogger, errLogger)
+	a := app.New(rdb, infLogger, errLogger)
 
 	go a.Start()
 
