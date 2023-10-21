@@ -7,18 +7,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hulla-hoop/testSobes/internal/DB"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
-	"github.com/hulla-hoop/testSobes/internal/psql"
+
 	"github.com/labstack/echo/v4"
 )
 
 type Endpoint struct {
-	Db        psql.DB
+	Db        DB.DB
 	inflogger *log.Logger
 	errLogger *log.Logger
 }
 
-func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *Endpoint {
+func New(db DB.DB, inflogger *log.Logger, errLogger *log.Logger) *Endpoint {
 	return &Endpoint{Db: db,
 		inflogger: inflogger,
 		errLogger: errLogger}

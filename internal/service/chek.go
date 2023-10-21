@@ -7,8 +7,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/hulla-hoop/testSobes/internal/DB"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
-	"github.com/hulla-hoop/testSobes/internal/psql"
 )
 
 type UserFailed struct {
@@ -28,7 +28,7 @@ type Servicer interface {
 
 // Функция обогащает верные сообщения и ложит в БД, невернные сообщения отправляются в очередь FIO_FAILED
 
-func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, infoLogger *log.Logger, errLogger *log.Logger, wg *sync.WaitGroup, db psql.DB) {
+func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, infoLogger *log.Logger, errLogger *log.Logger, wg *sync.WaitGroup, db DB.DB) {
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -42,26 +42,27 @@ func Distribution(s Servicer, u chan modeldb.User, uFailed chan UserFailed, info
 			close(uFailed)
 			run = false
 		default:
-			User := <-u
-			chekErr, chek := s.CheckErr(User)
-			if chek {
-				User, err := s.Encriment(User)
-				infoLogger.Println("Сообщение готово к хранению в БД", User)
-				err = db.Create(&User)
-				if err != nil {
-					errLogger.Println(err)
-				}
+			for User := range u {
+				chekErr, chek := s.CheckErr(User)
+				if chek {
+					User, err := s.Encriment(User)
+					infoLogger.Println("Сообщение готово к хранению в БД", User)
+					err = db.Create(&User)
+					if err != nil {
+						errLogger.Println(err)
+					}
 
-			} else {
-				UserFail := UserFailed{
-					Name:       User.Name,
-					Surname:    User.Surname,
-					Patronymic: User.Patronymic,
-					Failed:     chekErr,
-				}
+				} else {
+					UserFail := UserFailed{
+						Name:       User.Name,
+						Surname:    User.Surname,
+						Patronymic: User.Patronymic,
+						Failed:     chekErr,
+					}
 
-				infoLogger.Println("Сообщение не прошло проверку и отправлено в очередь FIO_FAIL")
-				uFailed <- UserFail
+					infoLogger.Println("Сообщение не прошло проверку и отправлено в очередь FIO_FAIL")
+					uFailed <- UserFail
+				}
 			}
 
 		}

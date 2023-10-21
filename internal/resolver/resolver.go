@@ -1,8 +1,8 @@
 package resolver
 
 import (
+	"github.com/hulla-hoop/testSobes/internal/DB"
 	modelgql "github.com/hulla-hoop/testSobes/internal/modelgql"
-	"github.com/hulla-hoop/testSobes/internal/psql"
 )
 
 // This file will not be regenerated automatically.
@@ -11,5 +11,5 @@ import (
 
 type Resolver struct {
 	user []*modelgql.User
-	DB   psql.DB
+	DB   DB.DB
 }

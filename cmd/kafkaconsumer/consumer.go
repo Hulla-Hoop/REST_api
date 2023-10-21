@@ -7,12 +7,12 @@ import (
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/hulla-hoop/testSobes/internal/DB/psql"
+	"github.com/hulla-hoop/testSobes/internal/DB/rediscash"
 	"github.com/hulla-hoop/testSobes/internal/config"
 	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/consumer"
 	"github.com/hulla-hoop/testSobes/internal/kafkaEndpoint/producer"
 	"github.com/hulla-hoop/testSobes/internal/modeldb"
-	"github.com/hulla-hoop/testSobes/internal/psql"
-	"github.com/hulla-hoop/testSobes/internal/rediscash"
 	"github.com/hulla-hoop/testSobes/internal/service"
 	"github.com/hulla-hoop/testSobes/pkg/app"
 	"github.com/joho/godotenv"
@@ -21,15 +21,16 @@ import (
 var wg sync.WaitGroup
 
 func main() {
+
+	//Инициализируем логеры
+	infLogger := log.New(os.Stdout, "\nINFO:  ", log.Ldate|log.Lshortfile)
+	errLogger := log.New(os.Stdout, "\nERROR:  ", log.Ldate|log.Lshortfile)
+
 	//Загружаем .env содержащий все конфиги
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		errLogger.Fatal("Не загружается .env файл")
 	}
-
-	//Инициализируем логеры
-	infLogger := log.New(os.Stdout, "INFO:  ", log.Ldate|log.Lshortfile)
-	errLogger := log.New(os.Stdout, "ERROR:  ", log.Ldate|log.Lshortfile)
 
 	//Инициализируем базу данных с gorm библиотекой
 	/* sqlGorm := psql.InitDbGorm() */
@@ -37,10 +38,10 @@ func main() {
 	//Инициализируем базу данных с стандартной библиотекой
 	db, err := psql.InitDb()
 	if err != nil {
-		fmt.Println("пиздец нахуя блять")
+		errLogger.Println("Проблемы иниициализации БД", err)
 	}
 
-	rdb := rediscash.Init(db)
+	rdb := rediscash.Init(db, infLogger, errLogger)
 
 	//Инициализируем echo роутер и запскаем его
 	a := app.New(rdb, infLogger, errLogger)
@@ -85,7 +86,7 @@ func main() {
 	}
 	consumer := consumer.New(c, &wg, infLogger, errLogger, config)
 
-	//Запускаем функции в горутинах для беспрерывной работы программы
+	//Запускаем функции в горутинах
 	go consumer.Consumer(UserChan)
 	go service.Distribution(s, UserChan, UserChanFailed, infLogger, errLogger, &wg, db)
 	go producer.Producer(UserChanFailed)

@@ -5,8 +5,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/99designs/gqlgen/handler"
+	"github.com/hulla-hoop/testSobes/internal/DB"
 	"github.com/hulla-hoop/testSobes/internal/echoendpoint"
-	"github.com/hulla-hoop/testSobes/internal/psql"
 	"github.com/hulla-hoop/testSobes/internal/resolver"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,18 +15,18 @@ import (
 type App struct {
 	e         *echoendpoint.Endpoint
 	echo      *echo.Echo
-	psql      psql.DB
+	DB        DB.DB
 	inflogger *log.Logger
 	errLogger *log.Logger
 }
 
-func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
+func New(db DB.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
 	a := App{}
 
-	a.psql = db
+	a.DB = db
 	a.errLogger = errLogger
 	a.inflogger = inflogger
-	a.e = echoendpoint.New(a.psql, a.inflogger, a.errLogger)
+	a.e = echoendpoint.New(a.DB, a.inflogger, a.errLogger)
 	a.echo = echo.New()
 
 	a.echo.Use(middleware.Logger())
@@ -35,7 +35,7 @@ func New(db psql.DB, inflogger *log.Logger, errLogger *log.Logger) *App {
 	a.echo.POST("/graphql", func(c echo.Context) error {
 		config := resolver.Config{
 			Resolvers: &resolver.Resolver{
-				DB: a.psql,
+				DB: a.DB,
 			},
 		}
 		h := handler.GraphQL(resolver.NewExecutableSchema(config))
