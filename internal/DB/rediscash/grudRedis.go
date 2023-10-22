@@ -10,7 +10,7 @@ import (
 )
 
 /*
-	// interface for redis
+	// Интерфейс который должен реализовать редис
 
 	type DB interface {
 	Create(user *modeldb.User) error
