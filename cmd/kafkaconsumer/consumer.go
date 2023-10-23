@@ -25,8 +25,8 @@ type Color string
 func main() {
 
 	//Инициализируем логеры
-	infLogger := log.New(os.Stdout, "\n\u001b[33m INFO:  ", log.Ldate|log.Lshortfile)
-	errLogger := log.New(os.Stdout, "\n\u001b[31m ERROR:  ", log.Ldate|log.Lshortfile)
+	infLogger := log.New(os.Stdout, "\n\u001b[33m  INFO:  ", log.Ldate|log.Lshortfile)
+	errLogger := log.New(os.Stdout, "\n\u001b[31m  ERROR:  ", log.Ldate|log.Lshortfile)
 
 	//Загружаем .env содержащий все конфиги
 	err := godotenv.Load()
