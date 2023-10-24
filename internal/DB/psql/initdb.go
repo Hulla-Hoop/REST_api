@@ -6,6 +6,7 @@ import (
 
 	"github.com/hulla-hoop/testSobes/internal/config"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
 
 type sqlPostgres struct {
@@ -21,7 +22,10 @@ func InitDb() (*sqlPostgres, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	err = goose.Up(dB, "db")
+	if err != nil {
+		fmt.Println(err)
+	}
 	return &sqlPostgres{
 		dB: dB,
 	}, nil

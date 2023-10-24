@@ -54,7 +54,7 @@ func (p *Psqlgorm) Update(user *modeldb.User, id int) error {
 	return nil
 }
 
-func (p *Psqlgorm) InsertPage(page uint, limit int) ([]modeldb.User, error) {
+func (p *Psqlgorm) InsertPage(page uint, limit int) (modeldb.Users, error) {
 
 	var UserCount int
 
@@ -91,4 +91,8 @@ func (p *Psqlgorm) Sort(field string) ([]modeldb.User, error) {
 	var users []modeldb.User
 	p.Db.Raw("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY %s", field).Scan(&users)
 	return users, nil
+}
+
+func (p *Psqlgorm) Filter(field string, operator string, value string) ([]modeldb.User, error) {
+	return []modeldb.User{}, nil
 }
