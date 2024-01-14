@@ -60,7 +60,7 @@ func (c *KafkaConsumer) Consumer(f chan modeldb.User) {
 				continue
 			}
 			var U modeldb.User
-			err = json.Unmarshal(ev.Key, &U)
+			err = json.Unmarshal(ev.Value, &U)
 			c.inflogger.Println("Получено сообщение из очереди FIO  ---- ", U)
 			if err != nil {
 				c.errLogger.Println(err)
