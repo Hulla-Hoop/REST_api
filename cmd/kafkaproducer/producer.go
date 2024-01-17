@@ -6,17 +6,16 @@ import (
 	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/hulla-hoop/testSobes/internal/config"
 )
 
 func main() {
 
-	c := config.New()
+	/* c := config.New() */
 
 	conf := make(kafka.ConfigMap)
-	conf["bootstrap.servers"] = c.BootstrapService
+	conf["bootstrap.servers"] = "localhost:9092"
 
-	topic := c.Topic
+	topic := "FIO"
 	p, err := kafka.NewProducer(&conf)
 
 	if err != nil {
